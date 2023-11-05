@@ -4,6 +4,8 @@ import 'package:flutter_alarm_clock/app/data/enums.dart';
 import 'package:flutter_alarm_clock/app/data/models/menu_info.dart';
 import 'package:flutter_alarm_clock/app/data/theme_data.dart';
 import 'package:flutter_alarm_clock/app/modules/views/alarm_page.dart';
+import 'package:flutter_alarm_clock/app/modules/views/info_page.dart';
+import 'package:flutter_alarm_clock/app/modules/views/now_page.dart';
 import 'package:flutter_alarm_clock/app/modules/views/clock_page.dart';
 import 'package:provider/provider.dart';
 
@@ -21,7 +23,9 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: menuItems.map((currentMenuInfo) => buildMenuButton(currentMenuInfo)).toList(),
+            children: menuItems
+                .map((currentMenuInfo) => buildMenuButton(currentMenuInfo))
+                .toList(),
           ),
           VerticalDivider(
             color: CustomColors.dividerColor,
@@ -34,13 +38,18 @@ class _HomePageState extends State<HomePage> {
                   return ClockPage();
                 else if (value.menuType == MenuType.alarm)
                   return AlarmPage();
+                else if (value.menuType == MenuType.now)
+                  return NowPage();
+                else if (value.menuType == MenuType.info)
+                  return InfoPage();
                 else
                   return Container(
                     child: RichText(
                       text: TextSpan(
                         style: TextStyle(fontSize: 20),
                         children: <TextSpan>[
-                          TextSpan(text: 'Upcoming Tutorial\n'),
+                          TextSpan(text: 'Lançamento em breve\n'),
+                          TextSpan(text: value.text),
                           TextSpan(
                             text: value.title,
                             style: TextStyle(fontSize: 48),
@@ -61,9 +70,12 @@ class _HomePageState extends State<HomePage> {
     return Consumer<MenuInfo>(
       builder: (BuildContext context, MenuInfo value, Widget? child) {
         return MaterialButton(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(32))),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(topRight: Radius.circular(32))),
           padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 0),
-          color: currentMenuInfo.menuType == value.menuType ? CustomColors.menuBackgroundColor : CustomColors.pageBackgroundColor,
+          color: currentMenuInfo.menuType == value.menuType
+              ? CustomColors.menuBackgroundColor
+              : CustomColors.pageBackgroundColor,
           onPressed: () {
             var menuInfo = Provider.of<MenuInfo>(context, listen: false);
             menuInfo.updateMenu(currentMenuInfo);
@@ -77,7 +89,10 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 16),
               Text(
                 currentMenuInfo.title ?? '',
-                style: TextStyle(fontFamily: 'avenir', color: CustomColors.primaryTextColor, fontSize: 14),
+                style: TextStyle(
+                    fontFamily: 'avenir',
+                    color: CustomColors.primaryTextColor,
+                    fontSize: 14),
               ),
             ],
           ),

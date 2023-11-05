@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_alarm_clock/main.dart';
+import 'package:flutter_alarm_clock/controllers/esp8266_controller.dart';
 
 class AlarmPage extends StatefulWidget {
   @override
@@ -45,8 +46,11 @@ class _AlarmPageState extends State<AlarmPage> {
         children: <Widget>[
           Text(
             'Alarm',
-            style:
-                TextStyle(fontFamily: 'avenir', fontWeight: FontWeight.w700, color: CustomColors.primaryTextColor, fontSize: 24),
+            style: TextStyle(
+                fontFamily: 'avenir',
+                fontWeight: FontWeight.w700,
+                color: CustomColors.primaryTextColor,
+                fontSize: 24),
           ),
           Expanded(
             child: FutureBuilder<List<AlarmInfo>>(
@@ -56,11 +60,14 @@ class _AlarmPageState extends State<AlarmPage> {
                   _currentAlarms = snapshot.data;
                   return ListView(
                     children: snapshot.data!.map<Widget>((alarm) {
-                      var alarmTime = DateFormat('hh:mm aa').format(alarm.alarmDateTime!);
-                      var gradientColor = GradientTemplate.gradientTemplate[alarm.gradientColorIndex!].colors;
+                      var alarmTime =
+                          DateFormat('hh:mm aa').format(alarm.alarmDateTime!);
+                      var gradientColor = GradientTemplate
+                          .gradientTemplate[alarm.gradientColorIndex!].colors;
                       return Container(
                         margin: const EdgeInsets.only(bottom: 32),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: gradientColor,
@@ -93,7 +100,9 @@ class _AlarmPageState extends State<AlarmPage> {
                                     SizedBox(width: 8),
                                     Text(
                                       alarm.title!,
-                                      style: TextStyle(color: Colors.white, fontFamily: 'avenir'),
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'avenir'),
                                     ),
                                   ],
                                 ),
@@ -106,7 +115,8 @@ class _AlarmPageState extends State<AlarmPage> {
                             ),
                             Text(
                               'Mon-Fri',
-                              style: TextStyle(color: Colors.white, fontFamily: 'avenir'),
+                              style: TextStyle(
+                                  color: Colors.white, fontFamily: 'avenir'),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -114,7 +124,10 @@ class _AlarmPageState extends State<AlarmPage> {
                                 Text(
                                   alarmTime,
                                   style: TextStyle(
-                                      color: Colors.white, fontFamily: 'avenir', fontSize: 24, fontWeight: FontWeight.w700),
+                                      color: Colors.white,
+                                      fontFamily: 'avenir',
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w700),
                                 ),
                                 IconButton(
                                     icon: Icon(Icons.delete),
@@ -139,12 +152,15 @@ class _AlarmPageState extends State<AlarmPage> {
                             width: double.infinity,
                             decoration: BoxDecoration(
                               color: CustomColors.clockBG,
-                              borderRadius: BorderRadius.all(Radius.circular(24)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(24)),
                             ),
                             child: MaterialButton(
-                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 32, vertical: 16),
                               onPressed: () {
-                                _alarmTimeString = DateFormat('HH:mm').format(DateTime.now());
+                                _alarmTimeString =
+                                    DateFormat('HH:mm').format(DateTime.now());
                                 showModalBottomSheet(
                                   useRootNavigator: true,
                                   context: context,
@@ -163,23 +179,36 @@ class _AlarmPageState extends State<AlarmPage> {
                                             children: [
                                               TextButton(
                                                 onPressed: () async {
-                                                  var selectedTime = await showTimePicker(
+                                                  var selectedTime =
+                                                      await showTimePicker(
                                                     context: context,
-                                                    initialTime: TimeOfDay.now(),
+                                                    initialTime:
+                                                        TimeOfDay.now(),
                                                   );
                                                   if (selectedTime != null) {
                                                     final now = DateTime.now();
-                                                    var selectedDateTime = DateTime(
-                                                        now.year, now.month, now.day, selectedTime.hour, selectedTime.minute);
-                                                    _alarmTime = selectedDateTime;
+                                                    var selectedDateTime =
+                                                        DateTime(
+                                                            now.year,
+                                                            now.month,
+                                                            now.day,
+                                                            selectedTime.hour,
+                                                            selectedTime
+                                                                .minute);
+                                                    _alarmTime =
+                                                        selectedDateTime;
                                                     setModalState(() {
-                                                      _alarmTimeString = DateFormat('HH:mm').format(selectedDateTime);
+                                                      _alarmTimeString =
+                                                          DateFormat('HH:mm')
+                                                              .format(
+                                                                  selectedDateTime);
                                                     });
                                                   }
                                                 },
                                                 child: Text(
                                                   _alarmTimeString,
-                                                  style: TextStyle(fontSize: 32),
+                                                  style:
+                                                      TextStyle(fontSize: 32),
                                                 ),
                                               ),
                                               ListTile(
@@ -195,15 +224,18 @@ class _AlarmPageState extends State<AlarmPage> {
                                               ),
                                               ListTile(
                                                 title: Text('Sound'),
-                                                trailing: Icon(Icons.arrow_forward_ios),
+                                                trailing: Icon(
+                                                    Icons.arrow_forward_ios),
                                               ),
                                               ListTile(
                                                 title: Text('Title'),
-                                                trailing: Icon(Icons.arrow_forward_ios),
+                                                trailing: Icon(
+                                                    Icons.arrow_forward_ios),
                                               ),
                                               FloatingActionButton.extended(
                                                 onPressed: () {
-                                                  onSaveAlarm(_isRepeatSelected);
+                                                  onSaveAlarm(
+                                                      _isRepeatSelected);
                                                 },
                                                 icon: Icon(Icons.alarm),
                                                 label: Text('Save'),
@@ -226,7 +258,9 @@ class _AlarmPageState extends State<AlarmPage> {
                                   SizedBox(height: 8),
                                   Text(
                                     'Add Alarm',
-                                    style: TextStyle(color: Colors.white, fontFamily: 'avenir'),
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'avenir'),
                                   ),
                                 ],
                               ),
@@ -256,7 +290,9 @@ class _AlarmPageState extends State<AlarmPage> {
     );
   }
 
-  void scheduleAlarm(DateTime scheduledNotificationDateTime, AlarmInfo alarmInfo, {required bool isRepeating}) async {
+  void scheduleAlarm(
+      DateTime scheduledNotificationDateTime, AlarmInfo alarmInfo,
+      {required bool isRepeating}) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'alarm_notif',
       'alarm_notif',
@@ -291,14 +327,14 @@ class _AlarmPageState extends State<AlarmPage> {
       );
     else
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        0,
-        'Office',
-        alarmInfo.title,
-        tz.TZDateTime.from(scheduledNotificationDateTime, tz.local),
-        platformChannelSpecifics,
-        androidAllowWhileIdle: true,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      );
+          0,
+          'Alarm',
+          alarmInfo.title,
+          tz.TZDateTime.from(scheduledNotificationDateTime, tz.local),
+          platformChannelSpecifics,
+          androidAllowWhileIdle: true,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime);
   }
 
   void onSaveAlarm(bool _isRepeating) {
@@ -315,7 +351,8 @@ class _AlarmPageState extends State<AlarmPage> {
     );
     _alarmHelper.insertAlarm(alarmInfo);
     if (scheduleAlarmDateTime != null) {
-      scheduleAlarm(scheduleAlarmDateTime, alarmInfo, isRepeating: _isRepeating);
+      scheduleAlarm(scheduleAlarmDateTime, alarmInfo,
+          isRepeating: _isRepeating);
     }
     Navigator.pop(context);
     loadAlarms();

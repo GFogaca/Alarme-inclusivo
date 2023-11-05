@@ -10,6 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  http: ^0.13.3
+
   #pub.dev packages
   sqflite: ^2.0.2+1
   flutter_local_notifications: ^9.5.3+1
