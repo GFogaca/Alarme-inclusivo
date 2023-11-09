@@ -7,7 +7,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_alarm_clock/main.dart';
-import 'package:flutter_alarm_clock/controllers/esp8266_controller.dart';
 
 class AlarmPage extends StatefulWidget {
   @override

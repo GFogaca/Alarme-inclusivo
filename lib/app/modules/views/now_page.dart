@@ -1,10 +1,7 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_alarm_clock/app/data/theme_data.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_alarm_clock/controllers/esp8266_controller.dart';
 
-import 'clockview.dart';
 
 class NowPage extends StatefulWidget {
   @override

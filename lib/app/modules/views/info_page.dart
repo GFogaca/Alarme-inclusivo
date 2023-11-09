@@ -1,9 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_alarm_clock/app/data/theme_data.dart';
-import 'package:intl/intl.dart';
 
-import 'clockview.dart';
 
 class InfoPage extends StatefulWidget {
   @override
