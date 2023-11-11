@@ -1,12 +1,28 @@
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> 
 #include <Arduino.h>
-// #include "ESPAsyncWebServer.h"
 #include <ESP8266WebServer.h>
+#include <NTPClient.h>
 #define wifiConnectedLed 5
-#define LED_BUILTIN 4
+#define motor 4
 
 WiFiManager wm;
-ESP8266WebServer server(80);  // Crie um servidor web na porta 80
+ESP8266WebServer server(80); 
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org");
+
+int alarmHour = -1;
+int alarmMinute = -1;
+
+void setAlarm(int hour, int minute) {
+  alarmHour = hour;
+  alarmMinute = minute;
+}
+
+void ligar() {
+  digitalWrite(motor, HIGH);
+  Serial.println("Alarme acionado!");
+}
 
 void handleRoot() {
 
@@ -19,16 +35,16 @@ void handleRoot() {
 }
 
 void handleComando() {
-  // Lida com o comando POST recebido
+  // POST command
   if (server.hasArg("comando")) {
     String comando = server.arg("comando");
     Serial.println("Comando inciado...");
     if (comando == "ligar") {
-      digitalWrite(LED_BUILTIN, HIGH); // Ligar um LED (opcional)
+      digitalWrite(motor, HIGH); 
       server.send(200, "text/plain", "Comando de ligar recebido");
       Serial.println("Comando de ligar recebido");
     } else if (comando == "desligar") {
-      digitalWrite(LED_BUILTIN, LOW); // Desligar o LED (opcional)
+      digitalWrite(motor, LOW); 
       server.send(200, "text/plain", "Comando de desligar recebido");
       Serial.println("Comando de desligar recebido");
     } else {
@@ -42,21 +58,33 @@ void handleComando() {
 }
 
 
-void setup() {
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP    
+void handleConfigurarAlarme() {
+  if (server.hasArg("hora") && server.hasArg("minuto")) {
+    int hora = server.arg("hora").toInt();
+    int minuto = server.arg("minuto").toInt();
+    setAlarm(hora, minuto);
+    server.send(200, "text/plain", "Alarme configurado");
+    Serial.println("Alarme configurado para " + String(hora) + ":" + String(minuto));
+  } else {
+    server.send(400, "text/plain", "Parâmetros inválidos");
+    Serial.println("Parâmetros inválidos");
+  }
+}
 
+void setup() {
+    WiFi.mode(WIFI_STA);   
     Serial.begin(115200);
 
     // pin to see if its connect into the network
     pinMode(wifiConnectedLed, OUTPUT);
     // pin to make vibrate 
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(motor, OUTPUT);
     // set wifi led low 
     digitalWrite(wifiConnectedLed, LOW);
     // make test in motor turning on and off  
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(motor, HIGH);
     delay(1000);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(motor, LOW);
 
     // ************ ONLY FOR TEST ********************* //
     //reset settings - wipe credentials for testing
@@ -68,37 +96,27 @@ void setup() {
     IPAddress _gw = IPAddress(192, 168, 15, 1);
     IPAddress _sn = IPAddress(255, 255, 255, 0);
 
-    
     wm.setSTAStaticIPConfig(_ip, _gw, _sn);
 
-    // wm.setConfigPortalBlocking(false);
     // set time in seconds to close window
     wm.setConfigPortalTimeout(300);
     //automatically connect using saved credentials if they exist
     //If connection fails it starts an access point with the specified name
     if(wm.autoConnect("Alarme","alarme123")){
-        Serial.println("conectado...yeey :)");
+        Serial.println("conectado!! :)");
         Serial.println("Inicio do projeto conectado");
         Serial.print("Local IP: ");
         Serial.println(WiFi.localIP());
 
         digitalWrite(wifiConnectedLed, HIGH);
 
-        // WiFiServer server(80);
-        // server.begin();  // Starts the Server
-                // Configuração de rota para a página de alarme
         // Configuração do servidor da Web
         // Manipulador de rota para a raiz
-
         server.on("/", HTTP_GET, handleRoot);
         server.on("/comando", HTTP_POST, handleComando);
+        server.on("/configurar-alarme", HTTP_GET, handleConfigurarAlarme);
         server.begin();  // Inicia o servidor web
 
-
-        // // Configurar rota para lidar com comandos POST
-        // server.on("/comando", HTTP_POST, handleComando);
-        // server.begin();
-        // Serial.println("Servidor HTTP iniciado");
     }
     else {
         Serial.println("Configportal running");
@@ -107,7 +125,18 @@ void setup() {
 
 void loop() {
 
-  server.handleClient();  // Lida com solicitações de clientes web
+  server.handleClient();
+
+if (alarmHour >= 0 && alarmMinute >= 0) {
+    int currentHour = timeClient.getHours();
+    int currentMinute = timeClient.getMinutes();
+    if (currentHour == alarmHour && currentMinute == alarmMinute) {
+      ligar();
+      // Reinicializa o alarme após ser acionado
+      alarmHour = -1;
+      alarmMinute = -1;
+    }
+  }
 
 }
 
