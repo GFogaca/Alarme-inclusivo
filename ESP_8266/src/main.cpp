@@ -1,7 +1,11 @@
 #include <WiFiManager.h> 
-#include <Arduino.h>
-#include <ESP8266WebServer.h>
+// #include <Arduino.h>
+// #include <ESP8266WebServer.h>
+
 #include <NTPClient.h>
+#include <ESP8266WiFi.h>
+#include <WiFiUdp.h>
+
 #define wifiConnectedLed 5
 #define motor 4
 
@@ -9,7 +13,8 @@ WiFiManager wm;
 ESP8266WebServer server(80); 
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org");
+NTPClient timeClient(ntpUDP);
+
 
 int alarmHour = -1;
 int alarmMinute = -1;
@@ -17,6 +22,9 @@ int alarmMinute = -1;
 void setAlarm(int hour, int minute) {
   alarmHour = hour;
   alarmMinute = minute;
+  Serial.print(alarmHour);
+  Serial.print(":");
+  Serial.print(alarmMinute);
 }
 
 void ligar() {
@@ -59,6 +67,8 @@ void handleComando() {
 
 
 void handleConfigurarAlarme() {
+  Serial.print(server.hasArg("hora"));
+  Serial.print(server.hasArg("minuto"));
   if (server.hasArg("hora") && server.hasArg("minuto")) {
     int hora = server.arg("hora").toInt();
     int minuto = server.arg("minuto").toInt();
@@ -91,15 +101,17 @@ void setup() {
     wm.resetSettings();
     // ************************************************//
 
-    //set static ip:
-    IPAddress _ip = IPAddress(192, 168, 15, 100);
-    IPAddress _gw = IPAddress(192, 168, 15, 1);
-    IPAddress _sn = IPAddress(255, 255, 255, 0);
+    IPAddress staticIP(192, 168, 15, 100);
+    IPAddress gateway(192, 168, 15, 1);
+    IPAddress subnet(255, 255, 255, 0);
+    IPAddress dns(8, 8, 8, 8);
 
-    wm.setSTAStaticIPConfig(_ip, _gw, _sn);
+    WiFi.config(staticIP, gateway, subnet, dns);
+
 
     // set time in seconds to close window
     wm.setConfigPortalTimeout(300);
+    
     //automatically connect using saved credentials if they exist
     //If connection fails it starts an access point with the specified name
     if(wm.autoConnect("Alarme","alarme123")){
@@ -108,24 +120,37 @@ void setup() {
         Serial.print("Local IP: ");
         Serial.println(WiFi.localIP());
 
+        Serial.print("Status da Conexão: ");
+        Serial.println(WiFi.status());
+
+
         digitalWrite(wifiConnectedLed, HIGH);
 
         // Configuração do servidor da Web
         // Manipulador de rota para a raiz
         server.on("/", HTTP_GET, handleRoot);
         server.on("/comando", HTTP_POST, handleComando);
-        server.on("/configurar-alarme", HTTP_GET, handleConfigurarAlarme);
+        server.on("/configurar-alarme", HTTP_POST, handleConfigurarAlarme);
         server.begin();  // Inicia o servidor web
 
-    }
+        // Inicia o cliente NTP
+        timeClient.begin();
+        // Configura o fuso horário para Brasília (UTC-3)
+        timeClient.setTimeOffset(-3 * 60 * 60);
+
+      }
     else {
         Serial.println("Configportal running");
     }
+    
+
 }
 
 void loop() {
 
   server.handleClient();
+
+  timeClient.update();
 
 if (alarmHour >= 0 && alarmMinute >= 0) {
     int currentHour = timeClient.getHours();

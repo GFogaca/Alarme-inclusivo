@@ -21,11 +21,11 @@ class Esp8266Controller {
     }
   }
 
-  static Future<void> configurarHorario(int hora, int minuto) async {
+  static Future<void> configurarHorario(int? hora, int? minuto) async {
     try {
-      var response = await http.get(
+      var response = await http.post(
         Uri.parse(
-            'http://$esp8266IP/configurar-horario?hora=$hora&minuto=$minuto'),
+            'http://$esp8266IP/configurar-alarme?hora=$hora&minuto=$minuto'),
       );
 
       if (response.statusCode == 200) {

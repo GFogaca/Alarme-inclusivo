@@ -1,5 +1,6 @@
 import 'package:flutter_alarm_clock/app/data/models/alarm_info.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter_alarm_clock/controllers/esp8266_controller.dart';
 
 final String tableAlarm = 'alarm';
 final String columnId = 'id';
@@ -50,8 +51,14 @@ class AlarmHelper {
 
   void insertAlarm(AlarmInfo alarmInfo) async {
     var db = await this.database;
+
+    int? hora = alarmInfo.alarmDateTime?.hour;
+    int? minuto = alarmInfo.alarmDateTime?.minute;
+
     var result = await db.insert(tableAlarm, alarmInfo.toMap());
     print('result : $result');
+
+    Esp8266Controller.configurarHorario(hora, minuto);
   }
 
   Future<List<AlarmInfo>> getAlarms() async {
